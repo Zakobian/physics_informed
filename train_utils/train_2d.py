@@ -153,8 +153,9 @@ def train_2d_burger(model,
             out = model(x).reshape(y.shape)
             data_loss = myloss(out, y)
 
-            loss_u, loss_f = PINO_loss(out, x[:, 0, :, 0], v)
-            total_loss = loss_u * ic_weight + loss_f * f_weight + data_loss * data_weight
+            # loss_u, loss_f = PINO_loss(out, x[:, 0, :, 0], v)
+            loss_u, loss_f, loss_gps = GPS_PINO_loss(out, x[:, 0, :, 0], v) ### TODO: fix logging
+            total_loss = loss_u * ic_weight + loss_f * f_weight + data_loss * data_weight + loss_gps * gps_weight ### TODO: add weighting
 
             optimizer.zero_grad()
             total_loss.backward()

@@ -12,7 +12,7 @@ from torch.utils.data import DataLoader
 
 from models import FNO2d
 
-from train_utils.losses import LpLoss, darcy_loss 
+from train_utils.losses import LpLoss, darcy_loss, gps_darcy_loss
 from train_utils.datasets import DarcyFlow, DarcyIC, sample_data
 from train_utils.utils import save_ckpt, count_params, dict2str
 
@@ -104,11 +104,12 @@ def train(model,
             out = model(ic).squeeze(dim=-1)
             out = out * ic_mol
             u0 = ic[..., 0]
-            f_loss = darcy_loss(out, u0)
-            log_dict['PDE'] = f_loss.item()
+            # f_loss = darcy_loss(out, u0)
+            f_loss, gps_loss = gps_darcy_loss(out, u0)
+            log_dict['PDE'] = f_loss.item() ##### TODO: add to log dict
         else:
             f_loss = 0.0
-        loss = data_loss * xy_weight + f_loss * f_weight
+        loss = data_loss * xy_weight + f_loss * f_weight + gps_loss * gps_weight #### TODO: add gps_weight to be something
 
         loss.backward()
         optimizer.step()
